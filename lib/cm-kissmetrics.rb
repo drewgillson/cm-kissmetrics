@@ -32,7 +32,6 @@ module CmKissmetrics
         details = CreateSend::Subscriber.get @cm_list, email
         ts = DateTime.parse(details.Date).to_time.to_i
         
-        puts type
         case type
             when 'active' then label = 'Subscribed to Email'
             when 'unsubscribed' then label = 'Unsubscribed from Email'
