@@ -32,11 +32,12 @@ module CmKissmetrics
         details = CreateSend::Subscriber.get @cm_list, email
         ts = DateTime.parse(details.Date).to_time.to_i
         
+        puts type
         case type
-            when 'Active' then label = 'Subscribed to Email'
-            when 'Unsubscribed' then label = 'Unsubscribed from Email'
-            when 'Bounced' then label = 'Bounced from Email'
-            when 'Deleted' then label = 'Deleted from Email'
+            when 'active' then label = 'Subscribed to Email'
+            when 'unsubscribed' then label = 'Unsubscribed from Email'
+            when 'bounced' then label = 'Bounced from Email'
+            when 'deleted' then label = 'Deleted from Email'
         end
         
         KM.record(label, {'List' => @list.details.Title, '_d' => 1, '_t' => ts})
