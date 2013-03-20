@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require 'yaml'
+require File.join(File.dirname(__FILE__), '../lib/cm-kissmetrics.rb')
+@keys = get_yaml_data '../keys.yaml'
+puts @keys.inspect
+abort
+
+CmKissmetrics::initialize(km_key, cm_key, cm_list)
