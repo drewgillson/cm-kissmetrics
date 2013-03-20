@@ -2,9 +2,9 @@
 require 'yaml'
 require File.join(File.dirname(__FILE__), '../lib/cm-kissmetrics.rb')
 begin
-    k = YAML.load_file 'keys.yaml'
-rescue Exception => e
-    puts "Create a file called keys.yaml in the current directory with your API keys for KISSMetrics and CampaignMonitor and the CampaignMonitor list ID you want to push historical information from. Here is an example:\n\nkm_key: xxxxxxx\ncm_key: xxxxxxx\ncm_list: xxxxxxx"
+    k = YAML.load_file 'config.yaml'
+rescue StandardError => e
+    puts "Create a file called config.yaml in the current directory with your API keys for KISSMetrics and CampaignMonitor and the CampaignMonitor list ID you want to push historical information from. Here is an example:\n\nkm_key: xxxxxxx\ncm_key: xxxxxxx\ncm_list: xxxxxxx"
     abort
 end
-CmKissmetrics::initialize(k['km_key'], k['cm_key'], k['cm_list'])
+CmKissmetrics::initialize(k['km_key'], k['cm_key'], k['cm_list'], k['allowed_history_days'])
