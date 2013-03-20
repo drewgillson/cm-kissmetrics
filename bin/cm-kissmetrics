@@ -7,5 +7,4 @@ rescue Exception => e
     puts "Create a file called keys.yaml in the current directory with your API keys for KISSMetrics and CampaignMonitor and the CampaignMonitor list ID you want to push historical information from. Here is an example:\n\nkm_key: xxxxxxx\ncm_key: xxxxxxx\ncm_list: xxxxxxx"
     abort
 end
-
 CmKissmetrics::initialize(k['km_key'], k['cm_key'], k['cm_list'])
