@@ -10,9 +10,9 @@ Just clone the repository and do a bundle install.
 Then, set up your API keys:
 * Create a file called config.yaml in the directory you'll run cm-kissmetrics from. Add your API keys for KISSMetrics and CampaignMonitor, and the CampaignMonitor list ID you want to push historical information from. Here is an example:
 
-    km_key: xxxxxxx
-    cm_key: xxxxxxx
-    cm_list: xxxxxxx
+    km_key: xxxxxxx<br/>
+    cm_key: xxxxxxx<br/>
+    cm_list: xxxxxxx<br/>
 
 You can also add the parameter allowed_history_days, to specify the maximum age in days for events pushed to KISSMetrics. For instance, if you set this parameter to 1, only email events that have been opened and clicked within the last 24 hours will be sent to KISSMetrics.
 
