@@ -4,5 +4,5 @@ group :production do
   gem "km", ">= 1.1.3"
   gem "rdoc", ">= 4.0"
   gem "jeweler", ">= 0"
-  gem "cm-kissmetrics", ">= 1.2"
+  gem "cm-kissmetrics", "~> 1.2.1"
 end
