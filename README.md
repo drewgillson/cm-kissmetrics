@@ -16,7 +16,7 @@ Then, set up your API keys:
 
 You can also add the parameter allowed_history_days, to specify the maximum age in days for events pushed to KISSMetrics. For instance, if you set this parameter to 1, only email events that have been opened and clicked within the last 24 hours will be sent to KISSMetrics.
 
-You're All Set
+You're All Set<br/>
 Add a regular cron task to run cm-kissmetrics!
 
 Depending on the size of your list and the number of emails you have sent, this could take a long time. You can monitor the progress of cm-kissmetrics by creating a folder called log in the directory you'll run cm-kissmetrics from. Once you have started cm-kissmetrics, you can tail log/kissmetrics_production_sent.log.
