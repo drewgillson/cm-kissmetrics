@@ -1,4 +1,5 @@
 require "cm-kissmetrics/version"
+require 'km'
 require "cm-kissmetrics/km"
 
 module CmKissmetrics
@@ -17,7 +18,7 @@ module CmKissmetrics
 
         @list = CreateSend::List.new @auth, @cm_list
 
-        page_size = '10'
+        page_size = '100'
         ['active','unsubscribed','bounced','deleted'].each{|s|
             page = 1
             res = eval("@list.#{s.downcase} '1970-01-01', #{page}, #{page_size}")
@@ -57,7 +58,7 @@ module CmKissmetrics
                 when 'deleted' then label = 'deleted from email'
             end
             
-            KM.record(label, {'List' => @list.details.Title, '_d' => 1, '_t' => ts})
+            k.record(label, {'List' => @list.details.Title, '_d' => 1, '_t' => ts})
             details.CustomFields.each{|field|
                 if ['City','Province','Postal Code','Source'].include? field.Key
                     k.set({field.Key => field.Value}) if field.Value != '' && field.Value != nil
@@ -84,8 +85,6 @@ module CmKissmetrics
             subscriber_events.each { |t| t.join }
             subscriber_events.each { |t| t.exit }
 
-            # Close all open files because KM doesn't clean up after itself
-            ObjectSpace.each_object(File) {|f| f.close rescue nil}
             puts "Finished recording events for #{email}"
         rescue StandardError => e
             puts e.message

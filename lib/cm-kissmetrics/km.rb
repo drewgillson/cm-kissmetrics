@@ -168,8 +168,11 @@ class KM
 
   def log(type,msg)
     begin
-      File.open(log_name(type), 'a') do |fh|
+      begin
+        fh = File.open(log_name(type), 'a')
         fh.puts(msg)
+      ensure
+        fh.close
       end
     rescue Exception => e
       raise KMError.new(e) if type.to_s == 'query'
@@ -212,8 +215,9 @@ class KM
       begin
         host,port = @host.split(':')
         proxy = URI.parse(ENV['http_proxy'] || ENV['HTTP_PROXY'] || '')
-        res = Net::HTTP::Proxy(proxy.host, proxy.port, proxy.user, proxy.password).start(host, port) do |http|
+        res = Net::HTTP.new(host, port) do |http|
           http.get(line)
+          http.finish
         end
       rescue Exception => e
         raise KMError.new("#{e} for host #{@host}")
