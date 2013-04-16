@@ -7,7 +7,7 @@ module CmKissmetrics
     require 'createsend'
     require 'date'
 
-    def self.initialize(km_key, cm_key, cm_list, allowed_history_days = 0)
+    def self.initialize(km_key, cm_key, cm_list, page_size, current_page, allowed_history_days = 0)
         @km_key = km_key
         @cm_key = cm_key
         @cm_list = cm_list
@@ -18,15 +18,13 @@ module CmKissmetrics
 
         @list = CreateSend::List.new @auth, @cm_list
 
-        page_size = '100'
         ['active','unsubscribed','bounced','deleted'].each{|s|
-            page = 1
-            res = eval("@list.#{s.downcase} '1970-01-01', #{page}, #{page_size}")
+            res = eval("@list.#{s.downcase} '1970-01-01', #{current_page}, #{page_size}")
             until res.Results.count == 0
-                puts "#{s.to_s} list, page #{page}: #{res.Results.count.to_s} records"
-                page = page + 1
+                puts "#{s.to_s} list, page #{current_page}: #{res.Results.count.to_s} records"
+                current_page = current_page + 1
                 subscribers = []
-                res = eval("@list.#{s.downcase} '1970-01-01', #{page.to_s}, #{page_size}")
+                res = eval("@list.#{s.downcase} '1970-01-01', #{current_page.to_s}, #{page_size}")
                 res.Results.each{|p|
                     d = {'p' => p, 's' => s}
                     subscribers << Thread.new(d){|d| CmKissmetrics::record(d)}               
@@ -84,7 +82,9 @@ module CmKissmetrics
             }
             subscriber_events.each { |t| t.join }
             subscriber_events.each { |t| t.exit }
-
+            person = nil
+            history = nil
+            details = nil
             puts "Finished recording events for #{email}"
         rescue StandardError => e
             puts e.message
