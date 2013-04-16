@@ -5,23 +5,18 @@ Integrate CampaignMonitor and KISSMetrics! This gem will add historic informatio
 
 Because KISSMetrics doesn't accept duplicate events, you can run this nightly in a cron job and KISSMetrics will ignore events that already exist, and create new events for things that haven't happened yet. In a future version only current events will be sent to KISSMetrics so the process is faster.
 
-Install Gems
-* gem install km
-* gem install createsend
-* gem install cm-kissmetrics
+Just clone the repository and do a bundle install.
 
-Set Up API Keys
+Then, set up your API keys:
 * Create a file called config.yaml in the directory you'll run cm-kissmetrics from. Add your API keys for KISSMetrics and CampaignMonitor, and the CampaignMonitor list ID you want to push historical information from. Here is an example:
 
-    km_key: xxxxxxx
-    
-    cm_key: xxxxxxx
-    
-    cm_list: xxxxxxx
+    km_key: xxxxxxx<br/>
+    cm_key: xxxxxxx<br/>
+    cm_list: xxxxxxx<br/>
 
 You can also add the parameter allowed_history_days, to specify the maximum age in days for events pushed to KISSMetrics. For instance, if you set this parameter to 1, only email events that have been opened and clicked within the last 24 hours will be sent to KISSMetrics.
 
-You're All Set
-* Just type cm-kissmetrics
+You're All Set<br/>
+Add a regular cron task to run cm-kissmetrics!
 
 Depending on the size of your list and the number of emails you have sent, this could take a long time. You can monitor the progress of cm-kissmetrics by creating a folder called log in the directory you'll run cm-kissmetrics from. Once you have started cm-kissmetrics, you can tail log/kissmetrics_production_sent.log.
