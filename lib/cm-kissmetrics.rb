@@ -1,9 +1,9 @@
 require "cm-kissmetrics/version"
+require "cm-kissmetrics/km"
 
 module CmKissmetrics
     
     require 'createsend'
-    require 'km'
     require 'date'
 
     def self.initialize(km_key, cm_key, cm_list, allowed_history_days = 0)
@@ -12,27 +12,42 @@ module CmKissmetrics
         @cm_list = cm_list
         @allowed_history_days = allowed_history_days
         @now = DateTime.now.to_time.to_i
+        @auth = {:api_key => @cm_key}
+        cs = CreateSend::CreateSend.new @auth
 
-        KM.init(@km_key, :log_dir => 'log/')
-        CreateSend.api_key @cm_key
+        @list = CreateSend::List.new @auth, @cm_list
 
-        @list = CreateSend::List.new @cm_list
-
+        page_size = '10'
         ['active','unsubscribed','bounced','deleted'].each{|s|
-            res = eval("@list.#{s.downcase} '1970-01-01'")
-            res.Results.each{|p|
-                CmKissmetrics::record(p, s)
-            }
+            page = 1
+            res = eval("@list.#{s.downcase} '1970-01-01', #{page}, #{page_size}")
+            until res.Results.count == 0
+                puts "#{s.to_s} list, page #{page}: #{res.Results.count.to_s} records"
+                page = page + 1
+                subscribers = []
+                res = eval("@list.#{s.downcase} '1970-01-01', #{page.to_s}, #{page_size}")
+                res.Results.each{|p|
+                    d = {'p' => p, 's' => s}
+                    subscribers << Thread.new(d){|d| CmKissmetrics::record(d)}               
+                }
+                subscribers.each { |t| t.join }
+                subscribers.each { |t| t.exit }
+                puts "Finished processing #{page_size} subscribers"
+            end
         }
     end
 
-    def self.record(p, type)
+    def self.record(d)
+        p = d['p']
+        type = d['s']
         email = p.EmailAddress
 
         begin
-            KM.identify(email)
+            k = KM.new
+            k.init(@km_key, :log_dir => 'log/')
+            k.identify(email)
 
-            details = CreateSend::Subscriber.get @cm_list, email
+            details = CreateSend::Subscriber.get @auth, @cm_list, email
             ts = DateTime.parse(details.Date).to_time.to_i
             
             case type
@@ -45,24 +60,33 @@ module CmKissmetrics
             KM.record(label, {'List' => @list.details.Title, '_d' => 1, '_t' => ts})
             details.CustomFields.each{|field|
                 if ['City','Province','Postal Code','Source'].include? field.Key
-                    KM.set({field.Key => field.Value}) if field.Value != '' && field.Value != nil
+                    k.set({field.Key => field.Value}) if field.Value != '' && field.Value != nil
                 end
             }
 
-            person = CreateSend::Subscriber.new @cm_list, email
+            subscriber_events = []
+            person = CreateSend::Subscriber.new @auth, @cm_list, email
             history = person.history
             history.each{|h|
                 h.Actions.each{|a|
                     ts = DateTime.parse(a.Date).to_time.to_i
                     if @now - ts <= (@allowed_history_days * 86400) || @allowed_history_days == 0
                         if a.Event == 'Open'
-                            KM.record('opened an email', {'Email' => h.Name, '_d' => 1, '_t' => ts})
+                            data = {'Email' => h.Name, '_d' => 1, '_t' => ts}
+                            subscriber_events << Thread.new(data){|data| k.record('opened an email', data)}
                         elsif a.Event == 'Click'
-                            KM.record('clicked something in an email', {'Email' => h.Name, 'Link' => a.Detail, '_d' => 1, '_t' => ts})
+                            data = {'Email' => h.Name, 'Link' => a.Detail, '_d' => 1, '_t' => ts}
+                            subscriber_events << Thread.new(data){|data| k.record('clicked something in an email', data)}
                         end
                     end
                 }
             }
+            subscriber_events.each { |t| t.join }
+            subscriber_events.each { |t| t.exit }
+
+            # Close all open files because KM doesn't clean up after itself
+            ObjectSpace.each_object(File) {|f| f.close rescue nil}
+            puts "Finished recording events for #{email}"
         rescue StandardError => e
             puts e.message
         end
