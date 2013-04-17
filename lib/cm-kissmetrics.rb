@@ -1,5 +1,6 @@
+require "net/http"
+require "cgi"
 require "cm-kissmetrics/version"
-require 'km'
 require "cm-kissmetrics/km"
 
 module CmKissmetrics
@@ -33,6 +34,7 @@ module CmKissmetrics
                 subscribers.each { |t| t.exit }
                 puts "Finished processing #{page_size} subscribers"
             end
+            current_page = 1
         }
     end
 
@@ -50,10 +52,10 @@ module CmKissmetrics
             ts = DateTime.parse(details.Date).to_time.to_i
             
             case type
-                when 'active' then label = 'subscribed to email'
-                when 'unsubscribed' then label = 'unsubscribed from email'
-                when 'bounced' then label = 'bounced from email'
-                when 'deleted' then label = 'deleted from email'
+                when 'active' then label = 'CM subscribed to email'
+                when 'unsubscribed' then label = 'CM unsubscribed from email'
+                when 'bounced' then label = 'CM bounced from email'
+                when 'deleted' then label = 'CM deleted from email'
             end
             
             k.record(label, {'List' => @list.details.Title, '_d' => 1, '_t' => ts})
@@ -72,10 +74,10 @@ module CmKissmetrics
                     if @now - ts <= (@allowed_history_days * 86400) || @allowed_history_days == 0
                         if a.Event == 'Open'
                             data = {'Email' => h.Name, '_d' => 1, '_t' => ts}
-                            subscriber_events << Thread.new(data){|data| k.record('opened an email', data)}
+                            subscriber_events << Thread.new(data){|data| k.record('CM opened an email', data)}
                         elsif a.Event == 'Click'
                             data = {'Email' => h.Name, 'Link' => a.Detail, '_d' => 1, '_t' => ts}
-                            subscriber_events << Thread.new(data){|data| k.record('clicked something in an email', data)}
+                            subscriber_events << Thread.new(data){|data| k.record('CM clicked something in an email', data)}
                         end
                     end
                 }

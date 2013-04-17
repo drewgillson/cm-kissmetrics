@@ -157,9 +157,9 @@ class KM
   end
 
   def log_error(error)
-    if defined?(HoptoadNotifier)
-      HoptoadNotifier.notify_or_ignore(KMError.new(error))
-    end
+    #if defined?(HoptoadNotifier)
+    #  HoptoadNotifier.notify_or_ignore(KMError.new(error))
+    #end
     msg = Time.now.strftime("<%c> ") + error.message
     $stderr.puts msg if @to_stderr
     log(:error, msg)
@@ -175,7 +175,7 @@ class KM
         fh.close
       end
     rescue Exception => e
-      raise KMError.new(e) if type.to_s == 'query'
+      # raise KMError.new(e) if type.to_s == 'query'
       # just discard at this point otherwise
     end
   end
@@ -214,13 +214,12 @@ class KM
     else
       begin
         host,port = @host.split(':')
-        proxy = URI.parse(ENV['http_proxy'] || ENV['HTTP_PROXY'] || '')
-        res = Net::HTTP.new(host, port) do |http|
+        res = Net::HTTP.start(host, port) do |http|
           http.get(line)
           http.finish
         end
       rescue Exception => e
-        raise KMError.new("#{e} for host #{@host}")
+        puts "error #{e} for host #{@host}"
       end
       log_sent(line)
     end
